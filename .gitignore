@@ -39,3 +39,5 @@ evaluation/junior_specialist.py
 .hydra/
 slurm/
 saved_models/
+
+!dataset/processed_images/*.png
