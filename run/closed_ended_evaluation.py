@@ -1,4 +1,15 @@
 import pytorch_lightning as pl
+import sys
+import os
+
+# sys.path.append(os.getcwd())
+# sys.path.append('/home/jack/Projects/yixin-llm/SpecialistVLMs')
+
+# Add the parent directory to the path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)  # Or use a more specific path
+sys.path.insert(0, project_root)
+
 from dataset.retinal_text_dataset import RetinalTextDataset
 import copy
 import torch
@@ -166,8 +177,8 @@ import hydra
 @hydra.main(version_base=None, config_path="../configs", config_name="default")
 def test(config):
     import sys
-    from slurm.util import record_job_id
-    config = record_job_id(config)
+    # from slurm.util import record_job_id
+    # config = record_job_id(config)
     
     sys.path.append(config['flamingo_dir'])
     sys.path.append(config['octlatent_dir'])

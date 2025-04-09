@@ -9,7 +9,7 @@ anyio==4.3.0
 appdirs==1.4.4
 asttokens==2.4.1
 attrs==23.2.0
-accelerate-1.4.0
+accelerate
 bitsandbytes==0.43.1
 blinker==1.7.0
 blis==0.7.11
@@ -30,7 +30,7 @@ contourpy==1.2.1
 cryptography==42.0.5
 cycler==0.12.1
 cymem==2.0.8
-dataclasses==0.8
+dataclasses
 datasets==2.14.4
 debugpy==1.8.1
 decorator==5.1.1
@@ -40,7 +40,6 @@ distro==1.9.0
 docker-pycreds==0.4.0
 einops==0.7.0
 einops-exts==0.0.4
-en-core-web-sm==3.7.1
 et-xmlfile==1.1.0
 exceptiongroup==1.2.0
 executing==2.0.1
@@ -104,7 +103,7 @@ omegaconf==2.3.0
 open_clip_torch==2.24.0
 open-flamingo==0.0.2
 openai==1.23.2
-opencv-python==4.9.0
+opencv-python
 openpyxl==3.1.2
 packaging==24.0
 pandas==2.2.1
@@ -141,7 +140,7 @@ PyQt5==5.15.9
 PyQt5-sip==12.12.2
 PySocks==1.7.1
 python-dateutil==2.9.0
-pytorch-lightning==1.7.7
+pytorch-lightning
 pytz==2024.1
 pyu2f==0.1.5
 PyWavelets==1.4.1
@@ -182,9 +181,9 @@ timm==0.9.16
 tokenizers==0.15.2
 toml==0.10.2
 tomli==2.0.1
-torch==2.1.2.post303
+torch
 torchmetrics==0.11.4
-torchvision==0.16.1+b88453f
+torchvision
 tornado==6.4
 tqdm==4.66.2
 traitlets==5.14.2
