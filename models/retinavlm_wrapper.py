@@ -89,11 +89,17 @@ def load_retinavlm(config):
 #     return model
 
 def load_retinavlm_specialist_from_hf(config):
-    rvlm_config = RetinaVLMConfig.from_pretrained("RobbieHolland/RetinaVLM", subfolder="RetinaVLM-Specialist")
+    # rvlm_config = RetinaVLMConfig.from_pretrained("RobbieHolland/RetinaVLM", subfolder="RetinaVLM-Specialist")
+    local_ckpt = config.pretrained_model_dir
 
+    # Step 1: Load config
+    rvlm_config = RetinaVLMConfig.from_pretrained(local_ckpt)
     rvlm_config.update(config)
     rvlm_config.model.checkpoint_path = None
-    model = RetinaVLM.from_pretrained("RobbieHolland/RetinaVLM", subfolder="RetinaVLM-Specialist", config=rvlm_config).eval()
+
+    # Step 2: Load model normally
+    model = RetinaVLM.from_pretrained(local_ckpt, config=rvlm_config).eval()
+
     return model
 
 @hydra.main(version_base=None, config_path="../configs", config_name="default")
