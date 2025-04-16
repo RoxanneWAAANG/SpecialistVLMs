@@ -1,20 +1,4 @@
-from run.vision_language_pretraining import MiniGPT4Module
-import hydra
 import torch
-import sys
-from PIL import Image
-import numpy as np
-from huggingface_hub import login, HfApi
-import scipy
-import textwrap
-from transformers import PreTrainedModel, PretrainedConfig
-
-class RetinaVLMConfig(PretrainedConfig):
-    model_type = "RetinaVLM"
-    def __init__(self, torch_dtype="float32", **kwargs):
-        super().__init__()
-        self.torch_dtype = torch_dtype
-        self.__dict__.update(kwargs)
 
 class RetinaVLM(PreTrainedModel):
     config_class = RetinaVLMConfig
@@ -24,23 +8,21 @@ class RetinaVLM(PreTrainedModel):
         print(hf_config)
         super().__init__(hf_config)
 
-        # Handle device properly - don't set as attribute
+        # Handle device properly - don't assign immediately
         if device is None:
             device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # Store as a private attribute to avoid conflict with parent class
-        self._device_type = device
-        
-        # Initialize model
+        # Initialize model but don't move to device yet
         self.model = self._initialize_model(config, device)
+        # Store device for later use
+        self.device = device
     
     def _initialize_model(self, config, device):
         try:
-            print(f"Creating model on {device}...")
-            # Create model
-            model = MiniGPT4Module(config, device=device).model
+            # Create model on CPU first
+            model = MiniGPT4Module(config, device="cpu").model
             
-            # After initialization, move to desired device
+            # After initialization, move to desired device (GPU if available)
             if device != "cpu":
                 model = model.to(device)
             
@@ -48,7 +30,7 @@ class RetinaVLM(PreTrainedModel):
         except Exception as e:
             print(f"Error during model initialization: {e}")
             # Fallback to basic initialization
-            return MiniGPT4Module(config, device=device).model.eval()
+            return MiniGPT4Module(config, device="cpu").model.eval()
 
     def convert_any_image_to_normalized_tensor(self, image_input):
         # Convert input to numpy array if it's a PIL Image
@@ -86,8 +68,8 @@ class RetinaVLM(PreTrainedModel):
         # Convert to PyTorch tensor
         img_tensor = torch.from_numpy(image_input)
 
-        # Move tensor to same device as model
-        img_tensor = img_tensor.to(self._device_type)
+        # Move tensor to same device as model (this is the key fix for the device mismatch error)
+        img_tensor = img_tensor.to(self.device)
 
         return img_tensor
 
@@ -107,7 +89,8 @@ class RetinaVLM(PreTrainedModel):
         
         # Stack images and ensure on right device
         images_tensor = torch.stack(processed_images, dim=0)
-        images_tensor = images_tensor.to(self._device_type)
+        if hasattr(self, 'device') and self.device is not None:
+            images_tensor = images_tensor.to(self.device)
         
         # Now query the model
         outputs, samples = self.model.query(
@@ -142,22 +125,19 @@ def load_retinavlm_specialist_from_hf(config):
     
     # Step 2: Create model with explicit GPU initialization first
     try:
+        print("Creating model on GPU...")
         # Initialize model on GPU
         device = "cuda" if torch.cuda.is_available() else "cpu"
         model = RetinaVLM(rvlm_config, device=device)
+            
         return model.eval()
     
     except Exception as e:
         print(f"Error during model creation: {e}")
         print("Trying alternative loading method...")
         
-        # Try loading transformers directly
+        # Fallback method with device_map="auto"
         try:
-            # First check if the package is up-to-date
-            print("Checking if transformers package needs to be updated...")
-            import subprocess
-            subprocess.run(['pip', 'install', '--upgrade', 'transformers'])
-            
             print("Attempting to load with device_map='auto'...")
             from transformers import AutoModel
             model = AutoModel.from_pretrained(
@@ -169,29 +149,4 @@ def load_retinavlm_specialist_from_hf(config):
             return model.eval()
         except Exception as e2:
             print(f"Alternative loading also failed: {e2}")
-            
-            # Try installing from source and loading again
-            try:
-                print("Attempting to install transformers from source...")
-                subprocess.run(['pip', 'install', 'git+https://github.com/huggingface/transformers.git'])
-                
-                from transformers import AutoModel
-                model = AutoModel.from_pretrained(
-                    "RobbieHolland/RetinaVLM",
-                    subfolder="RetinaVLM-Specialist",
-                    device_map="auto",
-                    torch_dtype=torch.float32
-                )
-                return model.eval()
-            except Exception as e3:
-                print(f"Source installation and loading failed: {e3}")
-                raise RuntimeError("Failed to initialize model")
-
-@hydra.main(version_base=None, config_path="../configs", config_name="default")
-def load_from_api(config):
-    model = load_retinavlm_specialist_from_hf(config)
-    return model
-
-if __name__ == "__main__":
-    # Run your preferred function
-    load_from_api()
+            raise RuntimeError("Failed to initialize model")
