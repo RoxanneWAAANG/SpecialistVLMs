@@ -1,7 +1,7 @@
 defaults:
   - _self_
 
-retina_metadata_dir: 
+retina_metadata_dir:  /dataset/processed_images
 retina_referral_metadata_dir: 
 
 retina_halfmedian_image_dir: 
