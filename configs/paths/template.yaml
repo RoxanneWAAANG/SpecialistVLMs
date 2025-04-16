@@ -14,7 +14,7 @@ images_for_figures_dir:
 
 openai_api_key: 
 
-pretrained_model_dir: /home/jack/Projects/yixin-llm/yixin-llm-data/SpecialistVLMs/
+pretrained_model_dir: /home/jack/Projects/yixin-llm/yixin-llm-data/SpecialistVLMs/RetinaVLM-Specialist
 flamingo_repo_dir: 
 llava_med_repo_dir: 
 llava_med_model_path: 
