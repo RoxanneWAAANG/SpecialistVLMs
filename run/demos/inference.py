@@ -46,3 +46,4 @@ def demo_inference(config):
 
 if __name__ == "__main__":
     demo_inference()
+
