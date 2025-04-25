@@ -92,6 +92,9 @@ class RetinaVLM(PreTrainedModel):
         return img_tensor
 
     def forward(self, images, queries, max_new_tokens=750):
+        torch.manual_seed(42)
+        torch.cuda.manual_seed_all(42)
+
         answer_preambles = [''] * len(images)
         
         # Standardize image input format
@@ -119,16 +122,25 @@ class RetinaVLM(PreTrainedModel):
             print(f"Available query parameters: {query_params}")
             
             # Create a dictionary of parameters that exist in the method
+            # query_args = {
+            #     'max_new_tokens': max_new_tokens,
+            #     'answer_preamble': answer_preambles,
+            #     'output_only': True,
+            #     'return_samples': True,
+            # }
             query_args = {
                 'max_new_tokens': max_new_tokens,
                 'answer_preamble': answer_preambles,
                 'output_only': True,
                 'return_samples': True,
+                'temperature': 0.0,
+                'top_p': 1.0,
+                'num_beams': 5
             }
             
             # Add additional parameters if available
             if 'temperature' in query_params:
-                query_args['temperature'] = 0.7
+                query_args['temperature'] = 0
             if 'top_p' in query_params:
                 query_args['top_p'] = 0.9
             if 'num_beams' in query_params:
