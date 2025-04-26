@@ -8,6 +8,7 @@ from huggingface_hub import login, HfApi
 import scipy
 import textwrap
 from transformers import PreTrainedModel, PretrainedConfig
+import random
 
 class RetinaVLMConfig(PretrainedConfig):
     model_type = "RetinaVLM"
@@ -94,6 +95,12 @@ class RetinaVLM(PreTrainedModel):
     def forward(self, images, queries, max_new_tokens=750):
         torch.manual_seed(42)
         torch.cuda.manual_seed_all(42)
+        np.random.seed(42)
+        random.seed(42)
+
+        torch.backends.cudnn.deterministic = True
+        torch.backends.cudnn.benchmark = False
+        self.model.eval()
 
         answer_preambles = [''] * len(images)
         
@@ -135,18 +142,18 @@ class RetinaVLM(PreTrainedModel):
                 'return_samples': True,
                 'temperature': 0.0,
                 'top_p': 1.0,
-                'num_beams': 5
+                'num_beams': 1
             }
             
-            # Add additional parameters if available
-            if 'temperature' in query_params:
-                query_args['temperature'] = 0
-            if 'top_p' in query_params:
-                query_args['top_p'] = 0.9
-            if 'num_beams' in query_params:
-                query_args['num_beams'] = 3
-            if 'repetition_penalty' in query_params:
-                query_args['repetition_penalty'] = 1.2
+            # # Add additional parameters if available
+            # if 'temperature' in query_params:
+            #     query_args['temperature'] = 0
+            # if 'top_p' in query_params:
+            #     query_args['top_p'] = 0.9
+            # if 'num_beams' in query_params:
+            #     query_args['num_beams'] = 3
+            # if 'repetition_penalty' in query_params:
+            #     query_args['repetition_penalty'] = 1.2
             
             # Now query the model with only supported parameters
             outputs, samples = self.model.query(images_tensor, queries, **query_args)
